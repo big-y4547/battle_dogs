@@ -6,7 +6,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
 }
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({Key? key, required String title}) : super(key: key);
+  const RegisterPage({super.key, required String title});
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();

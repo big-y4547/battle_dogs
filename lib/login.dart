@@ -1,4 +1,4 @@
-import 'package:battle_dogs/main.dart';
+import 'package:battle_dogs/Register.dart';
 import 'package:flutter/material.dart';
 
 
@@ -7,7 +7,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
 }
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key, required String title}) : super(key: key);
+  const LoginPage({super.key, required String title});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
