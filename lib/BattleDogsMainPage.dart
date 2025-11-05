@@ -4,6 +4,7 @@ import 'package:battle_dogs/Gacha.dart';
 import 'package:battle_dogs/Dogs.dart';
 import 'package:battle_dogs/levels.dart';
 import 'package:battle_dogs/Settings.dart';
+import 'package:flutter/services.dart';
 
 
 void main() {
@@ -573,6 +574,7 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage> with TickerProv
           ),
           const SizedBox(height: 16),
           _buildLogoutButton(
+            
             '🚪 LOGOUT',
             const Color.fromARGB(255, 223, 119, 23),
             const Color(0xFFE74C3C),
@@ -629,188 +631,191 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage> with TickerProv
       ),
     );
   }
-   Widget _buildBattleButton(String text,Color bordercolor, Color topColor, Color bottomColor, VoidCallback onTap, {bool isSmall = false}) {
-    return ElevatedButton(
-      onPressed:(){
-        Navigator.push(context, MaterialPageRoute(builder: (context)=>LevelsPage()));
-      },
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: isSmall ? 24 : 28),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [topColor, bottomColor],
+Widget _buildBattleButton(String text, Color bordercolor, Color topColor, Color bottomColor, VoidCallback onTap, {bool isSmall = false}) {
+  return GestureDetector(
+    onTap: () {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => LevelsPage()));
+    },
+    child: Container(
+      padding: EdgeInsets.symmetric(vertical: isSmall ? 24 : 28),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [topColor, bottomColor],
+        ),
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(color: bordercolor, width: 4),
+        boxShadow: [
+          const BoxShadow(
+            color: Color(0x66000000),
+            blurRadius: 10,
+            offset: Offset(0, 6),
           ),
-          borderRadius: BorderRadius.circular(25),
-          border: Border.all(color: bordercolor, width: 4),
-          boxShadow: [
-            const BoxShadow(
-              color: Color(0x66000000),
-              blurRadius: 10,
-              offset: Offset(0, 6),
-            ),
-            BoxShadow(
-              // ignore: deprecated_member_use
-              color: Color(topColor.value & 0x00FFFFFF | 0x80000000),
-              blurRadius: 20,
-              spreadRadius: 2,
-            ),
+          BoxShadow(
+            // ignore: deprecated_member_use
+            color: Color(topColor.value & 0x00FFFFFF | 0x80000000),
+            blurRadius: 20,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: isSmall ? 18 : 24,
+          fontWeight: FontWeight.w900,
+          color: Colors.white,
+          letterSpacing: 1.5,
+          shadows: const [
+            Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
+            Shadow(color: Colors.black54, offset: Offset(-1, -1), blurRadius: 4),
           ],
         ),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: isSmall ? 18 : 24,
-            fontWeight: FontWeight.w900,
-            color: Colors.white,
-            letterSpacing: 1.5,
-            shadows: const [
-              Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
-              Shadow(color: Colors.black54, offset: Offset(-1, -1), blurRadius: 4),
-            ],
-          ),
-        ),
       ),
-    );
-  }
-     Widget _buildSettingsButton(String text,Color bordercolor, Color topColor, Color bottomColor, VoidCallback onTap, {bool isSmall = false}) {
-    return ElevatedButton(
-      onPressed:(){
-        Navigator.push(context, MaterialPageRoute(builder: (context)=>SettingsPage()));
-      },
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: isSmall ? 24 : 28),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [topColor, bottomColor],
+    ),
+  );
+}
+
+Widget _buildSettingsButton(String text, Color bordercolor, Color topColor, Color bottomColor, VoidCallback onTap, {bool isSmall = false}) {
+  return GestureDetector(
+    onTap: () {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsPage()));
+    },
+    child: Container(
+      padding: EdgeInsets.symmetric(vertical: isSmall ? 24 : 28),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [topColor, bottomColor],
+        ),
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(color: bordercolor, width: 4),
+        boxShadow: [
+          const BoxShadow(
+            color: Color(0x66000000),
+            blurRadius: 10,
+            offset: Offset(0, 6),
           ),
-          borderRadius: BorderRadius.circular(25),
-          border: Border.all(color: bordercolor, width: 4),
-          boxShadow: [
-            const BoxShadow(
-              color: Color(0x66000000),
-              blurRadius: 10,
-              offset: Offset(0, 6),
-            ),
-            BoxShadow(
-              // ignore: deprecated_member_use
-              color: Color(topColor.value & 0x00FFFFFF | 0x80000000),
-              blurRadius: 20,
-              spreadRadius: 2,
-            ),
+          BoxShadow(
+            // ignore: deprecated_member_use
+            color: Color(topColor.value & 0x00FFFFFF | 0x80000000),
+            blurRadius: 20,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: isSmall ? 18 : 24,
+          fontWeight: FontWeight.w900,
+          color: Colors.white,
+          letterSpacing: 1.5,
+          shadows: const [
+            Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
+            Shadow(color: Colors.black54, offset: Offset(-1, -1), blurRadius: 4),
           ],
         ),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: isSmall ? 18 : 24,
-            fontWeight: FontWeight.w900,
-            color: Colors.white,
-            letterSpacing: 1.5,
-            shadows: const [
-              Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
-              Shadow(color: Colors.black54, offset: Offset(-1, -1), blurRadius: 4),
-            ],
-          ),
-        ),
       ),
-    );
-  }
-     Widget _buildGachaButton(String text,Color bordercolor, Color topColor, Color bottomColor, VoidCallback onTap, {bool isSmall = false}) {
-    return ElevatedButton(
-      onPressed:(){
-        Navigator.push(context, MaterialPageRoute(builder: (context)=>GachaPage()));
-      },
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: isSmall ? 24 : 28),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [topColor, bottomColor],
+    ),
+  );
+}
+
+Widget _buildGachaButton(String text, Color bordercolor, Color topColor, Color bottomColor, VoidCallback onTap, {bool isSmall = false}) {
+  return GestureDetector(
+    onTap: () {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => GachaPage()));
+    },
+    child: Container(
+      padding: EdgeInsets.symmetric(vertical: isSmall ? 24 : 28),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [topColor, bottomColor],
+        ),
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(color: bordercolor, width: 4),
+        boxShadow: [
+          const BoxShadow(
+            color: Color(0x66000000),
+            blurRadius: 10,
+            offset: Offset(0, 6),
           ),
-          borderRadius: BorderRadius.circular(25),
-          border: Border.all(color: bordercolor, width: 4),
-          boxShadow: [
-            const BoxShadow(
-              color: Color(0x66000000),
-              blurRadius: 10,
-              offset: Offset(0, 6),
-            ),
-            BoxShadow(
-              // ignore: deprecated_member_use
-              color: Color(topColor.value & 0x00FFFFFF | 0x80000000),
-              blurRadius: 20,
-              spreadRadius: 2,
-            ),
+          BoxShadow(
+            // ignore: deprecated_member_use
+            color: Color(topColor.value & 0x00FFFFFF | 0x80000000),
+            blurRadius: 20,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: isSmall ? 18 : 24,
+          fontWeight: FontWeight.w900,
+          color: Colors.white,
+          letterSpacing: 1.5,
+          shadows: const [
+            Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
+            Shadow(color: Colors.black54, offset: Offset(-1, -1), blurRadius: 4),
           ],
         ),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: isSmall ? 18 : 24,
-            fontWeight: FontWeight.w900,
-            color: Colors.white,
-            letterSpacing: 1.5,
-            shadows: const [
-              Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
-              Shadow(color: Colors.black54, offset: Offset(-1, -1), blurRadius: 4),
-            ],
-          ),
-        ),
       ),
-    );
-  }
-     Widget _buildogsButton(String text,Color bordercolor, Color topColor, Color bottomColor, VoidCallback onTap, {bool isSmall = false}) {
-    return ElevatedButton(
-      onPressed:(){
-        Navigator.push(context, MaterialPageRoute(builder: (context)=>MyDogsPage()));
-      },
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: isSmall ? 24 : 28),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [topColor, bottomColor],
+    ),
+  );
+}
+
+Widget _buildogsButton(String text, Color bordercolor, Color topColor, Color bottomColor, VoidCallback onTap, {bool isSmall = false}) {
+  return GestureDetector(
+    onTap: () {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => MyDogsPage()));
+    },
+    child: Container(
+      padding: EdgeInsets.symmetric(vertical: isSmall ? 24 : 28),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [topColor, bottomColor],
+        ),
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(color: bordercolor, width: 4),
+        boxShadow: [
+          const BoxShadow(
+            color: Color(0x66000000),
+            blurRadius: 10,
+            offset: Offset(0, 6),
           ),
-          borderRadius: BorderRadius.circular(25),
-          border: Border.all(color: bordercolor, width: 4),
-          boxShadow: [
-            const BoxShadow(
-              color: Color(0x66000000),
-              blurRadius: 10,
-              offset: Offset(0, 6),
-            ),
-            BoxShadow(
-              // ignore: deprecated_member_use
-              color: Color(topColor.value & 0x00FFFFFF | 0x80000000),
-              blurRadius: 20,
-              spreadRadius: 2,
-            ),
+          BoxShadow(
+            // ignore: deprecated_member_use
+            color: Color(topColor.value & 0x00FFFFFF | 0x80000000),
+            blurRadius: 20,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: isSmall ? 18 : 24,
+          fontWeight: FontWeight.w900,
+          color: Colors.white,
+          letterSpacing: 1.5,
+          shadows: const [
+            Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
+            Shadow(color: Colors.black54, offset: Offset(-1, -1), blurRadius: 4),
           ],
         ),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: isSmall ? 18 : 24,
-            fontWeight: FontWeight.w900,
-            color: Colors.white,
-            letterSpacing: 1.5,
-            shadows: const [
-              Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
-              Shadow(color: Colors.black54, offset: Offset(-1, -1), blurRadius: 4),
-            ],
-          ),
-        ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
