@@ -4,7 +4,6 @@ import 'package:battle_dogs/Gacha.dart';
 import 'package:battle_dogs/Dogs.dart';
 import 'package:battle_dogs/levels.dart';
 import 'package:battle_dogs/Settings.dart';
-import 'package:flutter/services.dart';
 
 
 void main() {

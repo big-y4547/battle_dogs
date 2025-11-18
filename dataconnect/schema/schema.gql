@@ -1,0 +1,44 @@
+type Player @table {
+  displayName: String!
+  createdAt: Timestamp!
+  lastLogin: Timestamp
+  totalCoins: Int
+  highestLevelReached: Int
+}
+
+type Level @table {
+  levelNumber: Int!
+  difficulty: String!
+  enemyBaseHealth: Int!
+  description: String
+  rewards: String
+}
+
+type DogUnit @table {
+  name: String!
+  breed: String!
+  attackPower: Int!
+  health: Int!
+  cost: Int!
+  rechargeTime: Float!
+  specialAbility: String
+  description: String
+  unlockLevel: Int
+}
+
+type PlayerDogUnit @table(key: ["player", "dogUnit"]) {
+  player: Player!
+  dogUnit: DogUnit!
+  level: Int!
+  experiencePoints: Int
+}
+
+type BattleLog @table {
+  player: Player!
+  level: Level!
+  startTime: Timestamp!
+  endTime: Timestamp!
+  outcome: String!
+  coinsEarned: Int
+  unitsLost: Int
+}
