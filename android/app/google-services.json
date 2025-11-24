@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "412608581858",
+    "project_id": "battledogs-18c63",
+    "storage_bucket": "battledogs-18c63.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:412608581858:android:ab3b7336a2a50ba6184ebb",
+        "android_client_info": {
+          "package_name": "com.example.battle_dogs"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChP4rz-B2rurpfgtAFJMP6KS_uAb8hMso"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

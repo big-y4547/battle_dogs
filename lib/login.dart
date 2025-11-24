@@ -1,6 +1,8 @@
+import 'package:battle_dogs/BattleDogsMainPage.dart';
 import 'package:battle_dogs/Register.dart';
+import 'package:battle_dogs/firebase/auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
 
 void main() {
   runApp(const MyApp());
@@ -18,7 +20,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: Colors.white,
       ),
-      home: const LoginPage(title: 'Login',),
+      home: const LoginPage(title: 'Login'),
     );
   }
 }
@@ -31,6 +33,18 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  void signIn() async {
+    try {
+      await authServies.value.signIn(
+        email: emailController.text,
+        password: passwordController.text,
+      );
+    } on FirebaseAuthException catch (e) {
+      print(e.message);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,17 +109,14 @@ class _LoginPageState extends State<LoginPage> {
                         const SizedBox(height: 8),
                         const Text(
                           'Sign in to continue',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey,
-                          ),
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 32),
                         TextFormField(
                           keyboardType: TextInputType.text,
                           decoration: InputDecoration(
-                            labelText: 'UserName',
+                            labelText: 'Email',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -115,14 +126,22 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.blue, width: 2),
+                              borderSide: const BorderSide(
+                                color: Colors.blue,
+                                width: 2,
+                              ),
                             ),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Please enter your userName';
+                              return 'Please enter your Email';
                             }
-                            return null;
+                            if (!value.contains('@')) {
+                              return 'Please enter a valid email';
+                            }
+                          },
+                          onChanged: (String value) {
+                            emailController.text = value;
                           },
                         ),
                         const SizedBox(height: 16),
@@ -131,11 +150,8 @@ class _LoginPageState extends State<LoginPage> {
                             labelText: 'Password',
                             prefixIcon: const Icon(Icons.lock_outline),
                             suffixIcon: IconButton(
-                              icon: Icon(
-                                 Icons.visibility_off_outlined,
-                              ),
-                              onPressed: () {
-                              },
+                              icon: Icon(Icons.visibility_off_outlined),
+                              onPressed: () {},
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -146,7 +162,10 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.blue, width: 2),
+                              borderSide: const BorderSide(
+                                color: Colors.blue,
+                                width: 2,
+                              ),
                             ),
                           ),
                           validator: (value) {
@@ -157,6 +176,9 @@ class _LoginPageState extends State<LoginPage> {
                               return 'Password must be at least 6 characters';
                             }
                             return null;
+                          },
+                          onChanged: (String value) {
+                            passwordController.text = value;
                           },
                         ),
                         const SizedBox(height: 12),
@@ -179,22 +201,29 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         const SizedBox(height: 24),
                         GestureDetector(
-                          
+                          onTap: () {
+                            signIn();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BattleDogsMainPage(),
+                              ),
+                            );
+                          },
                           child: Container(
-                           padding: const EdgeInsets.symmetric(vertical: 30),
-                           decoration: BoxDecoration(
-                           shape: BoxShape.rectangle,
-                           color: Colors.blue,
-                           
-                          ),
+                            padding: const EdgeInsets.symmetric(vertical: 30),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.rectangle,
+                              color: Colors.blue,
+                            ),
                             child: const Text(
-                            'Sign In',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                              'Sign In',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                           ),
                         ),
                         const SizedBox(height: 24),
                         Row(
@@ -206,12 +235,13 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             GestureDetector(
                               onTap: () {
-                               Navigator.push(
-                               context,
-                               MaterialPageRoute(
-                                builder: (context) => RegisterPage(title: 'Login'),
-                              )
-                            );
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        RegisterPage(title: 'Register'),
+                                  ),
+                                );
                               },
                               child: const Text(
                                 'Sign Up',

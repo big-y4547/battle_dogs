@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:battle_dogs/BattleDogsMainPage.dart';
+import 'lib.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,10 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'My Dogs',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.orange,
-        fontFamily: 'Arial',
-      ),
+      theme: ThemeData(primarySwatch: Colors.orange, fontFamily: 'Arial'),
       home: const MyDogsPage(),
     );
   }
@@ -120,11 +118,7 @@ class _MyDogsPageState extends State<MyDogsPage> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF6DD5FA),
-              Color(0xFF2980B9),
-              Color(0xFF1E3C72),
-            ],
+            colors: [Color(0xFF6DD5FA), Color(0xFF2980B9), Color(0xFF1E3C72)],
             stops: [0.0, 0.6, 1.0],
           ),
         ),
@@ -134,9 +128,7 @@ class _MyDogsPageState extends State<MyDogsPage> {
               _buildHeader(),
               _buildStats(),
               _buildFilterBar(),
-              Expanded(
-                child: _buildDogsList(),
-              ),
+              Expanded(child: _buildDogsList()),
             ],
           ),
         ),
@@ -164,7 +156,10 @@ class _MyDogsPageState extends State<MyDogsPage> {
           IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context)=>BattleDogsMainPage()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => BattleDogsMainPage()),
+              );
             },
           ),
           const Expanded(
@@ -177,7 +172,11 @@ class _MyDogsPageState extends State<MyDogsPage> {
                 color: Colors.white,
                 letterSpacing: 2,
                 shadows: [
-                  Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
+                  Shadow(
+                    color: Colors.black,
+                    offset: Offset(2, 2),
+                    blurRadius: 4,
+                  ),
                 ],
               ),
             ),
@@ -190,8 +189,11 @@ class _MyDogsPageState extends State<MyDogsPage> {
 
   Widget _buildStats() {
     final totalDogs = _myDogs.length;
-    final totalPower = _myDogs.fold(0, (sum, dog) => sum + (dog['power'] as int));
-    
+    final totalPower = _myDogs.fold(
+      0,
+      (sum, dog) => sum + (dog['power'] as int),
+    );
+
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
@@ -252,7 +254,7 @@ class _MyDogsPageState extends State<MyDogsPage> {
 
   Widget _buildFilterBar() {
     final filters = ['All', 'Legendary', 'Epic', 'Rare', 'Common'];
-    
+
     return Container(
       height: 60,
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -262,7 +264,7 @@ class _MyDogsPageState extends State<MyDogsPage> {
         itemBuilder: (context, index) {
           final filter = filters[index];
           final isSelected = _selectedFilter == filter;
-          
+
           return GestureDetector(
             onTap: () {
               setState(() {
@@ -324,7 +326,7 @@ class _MyDogsPageState extends State<MyDogsPage> {
 
   Widget _buildDogCard(Map<String, dynamic> dog) {
     final progress = dog['level'] / dog['maxLevel'];
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -370,10 +372,7 @@ class _MyDogsPageState extends State<MyDogsPage> {
               ],
             ),
             child: Center(
-              child: Text(
-                dog['icon'],
-                style: const TextStyle(fontSize: 45),
-              ),
+              child: Text(dog['icon'], style: const TextStyle(fontSize: 45)),
             ),
           ),
           const SizedBox(width: 16),
@@ -395,7 +394,10 @@ class _MyDogsPageState extends State<MyDogsPage> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: dog['color'],
                         borderRadius: BorderRadius.circular(12),
@@ -458,7 +460,12 @@ class _MyDogsPageState extends State<MyDogsPage> {
                         height: 12,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [dog['color'], Color(dog['color'].value & 0x00FFFFFF | 0xCC000000)],
+                            colors: [
+                              dog['color'],
+                              Color(
+                                dog['color'].value & 0x00FFFFFF | 0xCC000000,
+                              ),
+                            ],
                           ),
                           borderRadius: BorderRadius.circular(6),
                         ),
@@ -484,7 +491,9 @@ class _MyDogsPageState extends State<MyDogsPage> {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: dog['level'] < dog['maxLevel'] ? const Color(0xFF27AE60) : const Color(0xFF95A5A6),
+                color: dog['level'] < dog['maxLevel']
+                    ? const Color(0xFF27AE60)
+                    : const Color(0xFF95A5A6),
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
                 boxShadow: const [

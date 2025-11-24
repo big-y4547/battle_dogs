@@ -1,7 +1,15 @@
+import 'package:battle_dogs/BattleDogsMainPage.dart';
+import 'package:battle_dogs/firebase/auth_service.dart';
 import 'package:battle_dogs/login.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -17,7 +25,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: Colors.white,
       ),
-      home: const RegisterPage(title: '',),
+      home: const RegisterPage(title: ''),
     );
   }
 }
@@ -29,10 +37,21 @@ class RegisterPage extends StatefulWidget {
   State<RegisterPage> createState() => _RegisterPageState();
 }
 
+void resister(dynamic controllerEmail, dynamic controllerPassword) async {
+  try {
+    await authServies.value.createUser(
+      email: controllerEmail.text,
+      password: controllerPassword.text,
+    );
+  } on FirebaseAuthException catch (e) {
+    print(e.message);
+  }
+}
+
 class _RegisterPageState extends State<RegisterPage> {
-
-
-
+  TextEditingController controllerEmail = TextEditingController();
+  TextEditingController controllerPassword = TextEditingController();
+  TextEditingController controllerUsername = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,10 +90,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 8),
                   const Text(
                     'Sign up to get started',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
@@ -91,14 +107,20 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.blue, width: 2),
+                        borderSide: const BorderSide(
+                          color: Colors.blue,
+                          width: 2,
+                        ),
                       ),
                     ),
-                    validator: (value) {
+                    validator: (String? value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your name';
                       }
                       return null;
+                    },
+                    onChanged: (String value) {
+                      controllerUsername.text = value;
                     },
                   ),
                   const SizedBox(height: 16),
@@ -116,7 +138,10 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.blue, width: 2),
+                        borderSide: const BorderSide(
+                          color: Colors.blue,
+                          width: 2,
+                        ),
                       ),
                     ),
                     validator: (value) {
@@ -128,6 +153,9 @@ class _RegisterPageState extends State<RegisterPage> {
                       }
                       return null;
                     },
+                    onChanged: (String value) {
+                      controllerEmail.text = value;
+                    },
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -135,11 +163,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       labelText: 'Password',
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
-                        icon: Icon(
-                           Icons.visibility_off_outlined,
-                        ),
-                        onPressed: () {
-                        },
+                        icon: Icon(Icons.visibility_off_outlined),
+                        onPressed: () {},
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -150,10 +175,13 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.blue, width: 2),
+                        borderSide: const BorderSide(
+                          color: Colors.blue,
+                          width: 2,
+                        ),
                       ),
                     ),
-                    validator: (value) {
+                    validator: (String? value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter a password';
                       }
@@ -162,21 +190,30 @@ class _RegisterPageState extends State<RegisterPage> {
                       }
                       return null;
                     },
+                    onChanged: (String value) {
+                      controllerPassword.text = value;
+                    },
                   ),
                   const SizedBox(height: 36),
                   GestureDetector(
-                  onTap: (){
-
-              }
-             ,child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 30),
-              decoration: BoxDecoration(
-                shape: BoxShape.rectangle,
-                color: Colors.blue,
-              ),
-              child: Center(child: Text("Sing up"),),
-             ),
-            ),
+                    onTap: () {
+                      resister(controllerEmail, controllerPassword);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BattleDogsMainPage(),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 30),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.rectangle,
+                        color: Colors.blue,
+                      ),
+                      child: Center(child: Text("Sing up")),
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -187,12 +224,12 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       GestureDetector(
                         onTap: () {
-                  Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => LoginPage(title: 'Login'),
-                  )
-                );
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => LoginPage(title: 'Login'),
+                            ),
+                          );
                         },
                         child: const Text(
                           'Sign In',
@@ -213,4 +250,3 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 }
-

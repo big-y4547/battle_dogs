@@ -1,10 +1,11 @@
+import 'package:battle_dogs/firebase/auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:battle_dogs/login.dart';
 import 'package:battle_dogs/Gacha.dart';
 import 'package:battle_dogs/Dogs.dart';
 import 'package:battle_dogs/levels.dart';
 import 'package:battle_dogs/Settings.dart';
-
 
 void main() {
   runApp(const MyApp());
@@ -18,12 +19,17 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Battle Dogs',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.orange,
-        fontFamily: 'Arial',
-      ),
+      theme: ThemeData(primarySwatch: Colors.orange, fontFamily: 'Arial'),
       home: const BattleDogsMainPage(),
     );
+  }
+}
+
+void logout() async {
+  try {
+    await authServies.value.signOut();
+  } on FirebaseAuthException catch (e) {
+    print(e.message);
   }
 }
 
@@ -34,19 +40,26 @@ class BattleDogsMainPage extends StatefulWidget {
   State<BattleDogsMainPage> createState() => _BattleDogsMainPageState();
 }
 
-class _BattleDogsMainPageState extends State<BattleDogsMainPage> with TickerProviderStateMixin {
+class _BattleDogsMainPageState extends State<BattleDogsMainPage>
+    with TickerProviderStateMixin {
   late AnimationController _cloudController;
   final int _coins = 15750;
   final int _level = 23;
-    void _showDialog(){
-    showDialog(context: context, builder: (BuildContext context) { 
-      return AlertDialog(
+  void _showDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
           title: Row(
             children: const [
-              Icon(Icons.warning_amber_rounded, color: Color(0xFFE74C3C), size: 28),
+              Icon(
+                Icons.warning_amber_rounded,
+                color: Color(0xFFE74C3C),
+                size: 28,
+              ),
               SizedBox(width: 12),
               Text('Logout'),
             ],
@@ -68,7 +81,12 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage> with TickerProv
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=>LoginPage(title: 'Login'),));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => LoginPage(title: 'Login'),
+                  ),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE74C3C),
@@ -80,7 +98,8 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage> with TickerProv
             ),
           ],
         );
-     },);
+      },
+    );
   }
 
   final List<Map<String, dynamic>> _leaderboard = [
@@ -135,7 +154,7 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage> with TickerProv
                     _buildAnimatedClouds(),
                     _buildGrassGround(),
                     SingleChildScrollView(
-                      child:                       Column(
+                      child: Column(
                         children: [
                           const SizedBox(height: 10),
                           _buildLogo(),
@@ -163,13 +182,13 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage> with TickerProv
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            const Color(0xF08B4513),
-            const Color(0xF0654321),
-          ],
+          colors: [const Color(0xF08B4513), const Color(0xF0654321)],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color.fromARGB(72, 152, 75, 16), width: 3),
+        border: Border.all(
+          color: const Color.fromARGB(72, 152, 75, 16),
+          width: 3,
+        ),
         boxShadow: [
           const BoxShadow(
             color: Color(0x80000000),
@@ -181,8 +200,16 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage> with TickerProv
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildResourceDisplay(Icons.star_rounded, 'LV.$_level', const Color(0xFFFF6B9D)),
-          _buildResourceDisplay(Icons.monetization_on_rounded, '$_coins', const Color(0xFFFFD700)),
+          _buildResourceDisplay(
+            Icons.star_rounded,
+            'LV.$_level',
+            const Color(0xFFFF6B9D),
+          ),
+          _buildResourceDisplay(
+            Icons.monetization_on_rounded,
+            '$_coins',
+            const Color(0xFFFFD700),
+          ),
         ],
       ),
     );
@@ -206,9 +233,14 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage> with TickerProv
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white, size: 22, shadows: const [
-            Shadow(color: Colors.black, offset: Offset(1, 1), blurRadius: 2)
-          ]),
+          Icon(
+            icon,
+            color: Colors.white,
+            size: 22,
+            shadows: const [
+              Shadow(color: Colors.black, offset: Offset(1, 1), blurRadius: 2),
+            ],
+          ),
           const SizedBox(width: 6),
           Text(
             value,
@@ -217,7 +249,11 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage> with TickerProv
               fontWeight: FontWeight.bold,
               fontSize: 15,
               shadows: [
-                Shadow(color: Colors.black, offset: Offset(1, 1), blurRadius: 2)
+                Shadow(
+                  color: Colors.black,
+                  offset: Offset(1, 1),
+                  blurRadius: 2,
+                ),
               ],
             ),
           ),
@@ -234,17 +270,29 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage> with TickerProv
           children: [
             Positioned(
               top: 60,
-              left: -50 + (_cloudController.value * MediaQuery.of(context).size.width * 1.5),
+              left:
+                  -50 +
+                  (_cloudController.value *
+                      MediaQuery.of(context).size.width *
+                      1.5),
               child: _buildCloud(100, 0.7),
             ),
             Positioned(
               top: 150,
-              left: -80 + (_cloudController.value * MediaQuery.of(context).size.width * 1.3),
+              left:
+                  -80 +
+                  (_cloudController.value *
+                      MediaQuery.of(context).size.width *
+                      1.3),
               child: _buildCloud(80, 0.6),
             ),
             Positioned(
               top: 100,
-              left: -100 + (_cloudController.value * MediaQuery.of(context).size.width * 1.4),
+              left:
+                  -100 +
+                  (_cloudController.value *
+                      MediaQuery.of(context).size.width *
+                      1.4),
               child: _buildCloud(70, 0.5),
             ),
           ],
@@ -256,7 +304,7 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage> with TickerProv
   Widget _buildCloud(double size, double opacity) {
     final cloudOpacity = (opacity * 255).toInt();
     final colorValue = 0xFFFFFF | (cloudOpacity << 24);
-    
+
     return Row(
       children: [
         Container(
@@ -304,11 +352,7 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage> with TickerProv
           gradient: const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0x002ECC71),
-              Color(0xFF27AE60),
-              Color(0xFF229954),
-            ],
+            colors: [Color(0x002ECC71), Color(0xFF27AE60), Color(0xFF229954)],
           ),
         ),
       ),
@@ -323,7 +367,10 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage> with TickerProv
           colors: [Color(0xFFFF6B35), Color(0xFFF7931E)],
         ),
         borderRadius: BorderRadius.circular(50),
-        border: Border.all(color: const Color.fromARGB(153, 247, 132, 2), width: 5),
+        border: Border.all(
+          color: const Color.fromARGB(153, 247, 132, 2),
+          width: 5,
+        ),
         boxShadow: [
           const BoxShadow(
             color: Color(0x66000000),
@@ -346,7 +393,11 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage> with TickerProv
           letterSpacing: 2,
           shadows: [
             Shadow(color: Colors.black, offset: Offset(3, 3), blurRadius: 6),
-            Shadow(color: Color(0xFF8B0000), offset: Offset(-2, -2), blurRadius: 6),
+            Shadow(
+              color: Color(0xFF8B0000),
+              offset: Offset(-2, -2),
+              blurRadius: 6,
+            ),
           ],
         ),
       ),
@@ -361,10 +412,7 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage> with TickerProv
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xF0FFFFFF),
-            Color(0xE6F5F5F5),
-          ],
+          colors: [Color(0xF0FFFFFF), Color(0xE6F5F5F5)],
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFFFD700), width: 4),
@@ -469,10 +517,7 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage> with TickerProv
             ),
           ),
           const SizedBox(width: 12),
-          Text(
-            player['avatar'],
-            style: const TextStyle(fontSize: 32),
-          ),
+          Text(player['avatar'], style: const TextStyle(fontSize: 32)),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -573,7 +618,6 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage> with TickerProv
           ),
           const SizedBox(height: 16),
           _buildLogoutButton(
-            
             '🚪 LOGOUT',
             const Color.fromARGB(255, 223, 119, 23),
             const Color(0xFFE74C3C),
@@ -586,7 +630,14 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage> with TickerProv
     );
   }
 
-    Widget _buildLogoutButton(String text,Color bordercolor, Color topColor, Color bottomColor, VoidCallback onTap, {bool isSmall = false}) {
+  Widget _buildLogoutButton(
+    String text,
+    Color bordercolor,
+    Color topColor,
+    Color bottomColor,
+    VoidCallback onTap, {
+    bool isSmall = false,
+  }) {
     return GestureDetector(
       onTap: _showDialog,
       child: Container(
@@ -623,198 +674,259 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage> with TickerProv
             letterSpacing: 1.5,
             shadows: const [
               Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
-              Shadow(color: Colors.black54, offset: Offset(-1, -1), blurRadius: 4),
+              Shadow(
+                color: Colors.black54,
+                offset: Offset(-1, -1),
+                blurRadius: 4,
+              ),
             ],
           ),
         ),
       ),
     );
   }
-Widget _buildBattleButton(String text, Color bordercolor, Color topColor, Color bottomColor, VoidCallback onTap, {bool isSmall = false}) {
-  return GestureDetector(
-    onTap: () {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => LevelsPage()));
-    },
-    child: Container(
-      padding: EdgeInsets.symmetric(vertical: isSmall ? 24 : 28),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [topColor, bottomColor],
-        ),
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: bordercolor, width: 4),
-        boxShadow: [
-          const BoxShadow(
-            color: Color(0x66000000),
-            blurRadius: 10,
-            offset: Offset(0, 6),
-          ),
-          BoxShadow(
-            // ignore: deprecated_member_use
-            color: Color(topColor.value & 0x00FFFFFF | 0x80000000),
-            blurRadius: 20,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: isSmall ? 18 : 24,
-          fontWeight: FontWeight.w900,
-          color: Colors.white,
-          letterSpacing: 1.5,
-          shadows: const [
-            Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
-            Shadow(color: Colors.black54, offset: Offset(-1, -1), blurRadius: 4),
-          ],
-        ),
-      ),
-    ),
-  );
-}
 
-Widget _buildSettingsButton(String text, Color bordercolor, Color topColor, Color bottomColor, VoidCallback onTap, {bool isSmall = false}) {
-  return GestureDetector(
-    onTap: () {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsPage()));
-    },
-    child: Container(
-      padding: EdgeInsets.symmetric(vertical: isSmall ? 24 : 28),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [topColor, bottomColor],
-        ),
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: bordercolor, width: 4),
-        boxShadow: [
-          const BoxShadow(
-            color: Color(0x66000000),
-            blurRadius: 10,
-            offset: Offset(0, 6),
+  Widget _buildBattleButton(
+    String text,
+    Color bordercolor,
+    Color topColor,
+    Color bottomColor,
+    VoidCallback onTap, {
+    bool isSmall = false,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => LevelsPage()),
+        );
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: isSmall ? 24 : 28),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [topColor, bottomColor],
           ),
-          BoxShadow(
-            // ignore: deprecated_member_use
-            color: Color(topColor.value & 0x00FFFFFF | 0x80000000),
-            blurRadius: 20,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: isSmall ? 18 : 24,
-          fontWeight: FontWeight.w900,
-          color: Colors.white,
-          letterSpacing: 1.5,
-          shadows: const [
-            Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
-            Shadow(color: Colors.black54, offset: Offset(-1, -1), blurRadius: 4),
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(color: bordercolor, width: 4),
+          boxShadow: [
+            const BoxShadow(
+              color: Color(0x66000000),
+              blurRadius: 10,
+              offset: Offset(0, 6),
+            ),
+            BoxShadow(
+              // ignore: deprecated_member_use
+              color: Color(topColor.value & 0x00FFFFFF | 0x80000000),
+              blurRadius: 20,
+              spreadRadius: 2,
+            ),
           ],
         ),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: isSmall ? 18 : 24,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+            letterSpacing: 1.5,
+            shadows: const [
+              Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
+              Shadow(
+                color: Colors.black54,
+                offset: Offset(-1, -1),
+                blurRadius: 4,
+              ),
+            ],
+          ),
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
-Widget _buildGachaButton(String text, Color bordercolor, Color topColor, Color bottomColor, VoidCallback onTap, {bool isSmall = false}) {
-  return GestureDetector(
-    onTap: () {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => GachaPage()));
-    },
-    child: Container(
-      padding: EdgeInsets.symmetric(vertical: isSmall ? 24 : 28),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [topColor, bottomColor],
-        ),
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: bordercolor, width: 4),
-        boxShadow: [
-          const BoxShadow(
-            color: Color(0x66000000),
-            blurRadius: 10,
-            offset: Offset(0, 6),
+  Widget _buildSettingsButton(
+    String text,
+    Color bordercolor,
+    Color topColor,
+    Color bottomColor,
+    VoidCallback onTap, {
+    bool isSmall = false,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => SettingsPage()),
+        );
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: isSmall ? 24 : 28),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [topColor, bottomColor],
           ),
-          BoxShadow(
-            // ignore: deprecated_member_use
-            color: Color(topColor.value & 0x00FFFFFF | 0x80000000),
-            blurRadius: 20,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: isSmall ? 18 : 24,
-          fontWeight: FontWeight.w900,
-          color: Colors.white,
-          letterSpacing: 1.5,
-          shadows: const [
-            Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
-            Shadow(color: Colors.black54, offset: Offset(-1, -1), blurRadius: 4),
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(color: bordercolor, width: 4),
+          boxShadow: [
+            const BoxShadow(
+              color: Color(0x66000000),
+              blurRadius: 10,
+              offset: Offset(0, 6),
+            ),
+            BoxShadow(
+              // ignore: deprecated_member_use
+              color: Color(topColor.value & 0x00FFFFFF | 0x80000000),
+              blurRadius: 20,
+              spreadRadius: 2,
+            ),
           ],
         ),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: isSmall ? 18 : 24,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+            letterSpacing: 1.5,
+            shadows: const [
+              Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
+              Shadow(
+                color: Colors.black54,
+                offset: Offset(-1, -1),
+                blurRadius: 4,
+              ),
+            ],
+          ),
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
-Widget _buildogsButton(String text, Color bordercolor, Color topColor, Color bottomColor, VoidCallback onTap, {bool isSmall = false}) {
-  return GestureDetector(
-    onTap: () {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => MyDogsPage()));
-    },
-    child: Container(
-      padding: EdgeInsets.symmetric(vertical: isSmall ? 24 : 28),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [topColor, bottomColor],
-        ),
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: bordercolor, width: 4),
-        boxShadow: [
-          const BoxShadow(
-            color: Color(0x66000000),
-            blurRadius: 10,
-            offset: Offset(0, 6),
+  Widget _buildGachaButton(
+    String text,
+    Color bordercolor,
+    Color topColor,
+    Color bottomColor,
+    VoidCallback onTap, {
+    bool isSmall = false,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => GachaPage()),
+        );
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: isSmall ? 24 : 28),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [topColor, bottomColor],
           ),
-          BoxShadow(
-            // ignore: deprecated_member_use
-            color: Color(topColor.value & 0x00FFFFFF | 0x80000000),
-            blurRadius: 20,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: isSmall ? 18 : 24,
-          fontWeight: FontWeight.w900,
-          color: Colors.white,
-          letterSpacing: 1.5,
-          shadows: const [
-            Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
-            Shadow(color: Colors.black54, offset: Offset(-1, -1), blurRadius: 4),
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(color: bordercolor, width: 4),
+          boxShadow: [
+            const BoxShadow(
+              color: Color(0x66000000),
+              blurRadius: 10,
+              offset: Offset(0, 6),
+            ),
+            BoxShadow(
+              // ignore: deprecated_member_use
+              color: Color(topColor.value & 0x00FFFFFF | 0x80000000),
+              blurRadius: 20,
+              spreadRadius: 2,
+            ),
           ],
         ),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: isSmall ? 18 : 24,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+            letterSpacing: 1.5,
+            shadows: const [
+              Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
+              Shadow(
+                color: Colors.black54,
+                offset: Offset(-1, -1),
+                blurRadius: 4,
+              ),
+            ],
+          ),
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
+
+  Widget _buildogsButton(
+    String text,
+    Color bordercolor,
+    Color topColor,
+    Color bottomColor,
+    VoidCallback onTap, {
+    bool isSmall = false,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => MyDogsPage()),
+        );
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: isSmall ? 24 : 28),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [topColor, bottomColor],
+          ),
+          borderRadius: BorderRadius.circular(25),
+          border: Border.all(color: bordercolor, width: 4),
+          boxShadow: [
+            const BoxShadow(
+              color: Color(0x66000000),
+              blurRadius: 10,
+              offset: Offset(0, 6),
+            ),
+            BoxShadow(
+              // ignore: deprecated_member_use
+              color: Color(topColor.value & 0x00FFFFFF | 0x80000000),
+              blurRadius: 20,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: isSmall ? 18 : 24,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+            letterSpacing: 1.5,
+            shadows: const [
+              Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
+              Shadow(
+                color: Colors.black54,
+                offset: Offset(-1, -1),
+                blurRadius: 4,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
