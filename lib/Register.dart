@@ -1,5 +1,5 @@
-import 'package:battle_dogs/BattleDogsMainPage.dart';
 import 'package:battle_dogs/firebase/auth_service.dart';
+import 'package:battle_dogs/firebase/database_service.dart';
 import 'package:battle_dogs/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -54,6 +54,8 @@ class _RegisterPageState extends State<RegisterPage> {
   TextEditingController controllerUsername = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    bool statosPasword = false;
+    bool statosEmail = false;
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -151,6 +153,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       if (!value.contains('@')) {
                         return 'Please enter a valid email';
                       }
+                      statosEmail = true;
                       return null;
                     },
                     onChanged: (String value) {
@@ -188,6 +191,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       if (value.length < 6) {
                         return 'Password must be at least 6 characters';
                       }
+                      statosPasword = true;
                       return null;
                     },
                     onChanged: (String value) {
@@ -198,12 +202,23 @@ class _RegisterPageState extends State<RegisterPage> {
                   GestureDetector(
                     onTap: () {
                       resister(controllerEmail, controllerPassword);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BattleDogsMainPage(),
-                        ),
+                      DatabaseService().create(
+                        path: 'email',
+                        data: controllerEmail.text,
                       );
+                      DatabaseService().create(
+                        path: 'password',
+                        data: controllerPassword.text,
+                      );
+
+                      if (statosEmail && statosPasword) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => LoginPage(title: 'Login'),
+                          ),
+                        );
+                      }
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 30),

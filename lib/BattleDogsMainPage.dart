@@ -1,5 +1,9 @@
 import 'package:battle_dogs/firebase/auth_service.dart';
+import 'package:battle_dogs/firebase/database_service.dart';
+import 'package:battle_dogs/firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:battle_dogs/login.dart';
 import 'package:battle_dogs/Gacha.dart';
@@ -7,7 +11,9 @@ import 'package:battle_dogs/Dogs.dart';
 import 'package:battle_dogs/levels.dart';
 import 'package:battle_dogs/Settings.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -80,7 +86,10 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage>
               ),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
+                logout();
+                await DatabaseService().updata(path: 'email', data: '');
+                await DatabaseService().updata(path: 'password', data: '');
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -100,6 +109,13 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage>
         );
       },
     );
+  }
+
+  Future<String> setSnapshot() async {
+    String email;
+    DataSnapshot? snapshot = await DatabaseService().read(path: 'email');
+    email = snapshot as String;
+    return email;
   }
 
   final List<Map<String, dynamic>> _leaderboard = [
@@ -208,6 +224,11 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage>
           _buildResourceDisplay(
             Icons.monetization_on_rounded,
             '$_coins',
+            const Color(0xFFFFD700),
+          ),
+          _buildResourceDisplay(
+            Icons.verified_user_rounded,
+            '$setSnapshot()',
             const Color(0xFFFFD700),
           ),
         ],

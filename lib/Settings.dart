@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:battle_dogs/BattleDogsMainPage.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -12,10 +13,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Battle Dogs Settings',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.orange,
-        fontFamily: 'Arial',
-      ),
+      theme: ThemeData(primarySwatch: Colors.orange, fontFamily: 'Arial'),
       home: const SettingsPage(),
     );
   }
@@ -32,7 +30,6 @@ class _SettingsPageState extends State<SettingsPage> {
   double _musicVolume = 70.0;
   double _sfxVolume = 85.0;
 
-
   void _showLogoutDialog() {
     showDialog(
       context: context,
@@ -43,7 +40,11 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           title: Row(
             children: const [
-              Icon(Icons.warning_amber_rounded, color: Color(0xFFE74C3C), size: 28),
+              Icon(
+                Icons.warning_amber_rounded,
+                color: Color(0xFFE74C3C),
+                size: 28,
+              ),
               SizedBox(width: 12),
               Text('Logout'),
             ],
@@ -65,6 +66,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             ElevatedButton(
               onPressed: () {
+                logout();
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -95,11 +97,7 @@ class _SettingsPageState extends State<SettingsPage> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF6DD5FA),
-              Color(0xFF2980B9),
-              Color(0xFF1E3C72),
-            ],
+            colors: [Color(0xFF6DD5FA), Color(0xFF2980B9), Color(0xFF1E3C72)],
             stops: [0.0, 0.6, 1.0],
           ),
         ),
@@ -147,12 +145,10 @@ class _SettingsPageState extends State<SettingsPage> {
           IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
             onPressed: () {
-                  Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => BattleDogsMainPage(),
-                  )
-                );
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => BattleDogsMainPage()),
+              );
             },
           ),
           const Expanded(
@@ -165,7 +161,11 @@ class _SettingsPageState extends State<SettingsPage> {
                 color: Colors.white,
                 letterSpacing: 2,
                 shadows: [
-                  Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
+                  Shadow(
+                    color: Colors.black,
+                    offset: Offset(2, 2),
+                    blurRadius: 4,
+                  ),
                 ],
               ),
             ),
@@ -227,7 +227,11 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildVolumeSlider(String label, double value, ValueChanged<double> onChanged) {
+  Widget _buildVolumeSlider(
+    String label,
+    double value,
+    ValueChanged<double> onChanged,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -318,7 +322,11 @@ class _SettingsPageState extends State<SettingsPage> {
             letterSpacing: 2,
             shadows: [
               Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
-              Shadow(color: Colors.black54, offset: Offset(-1, -1), blurRadius: 4),
+              Shadow(
+                color: Colors.black54,
+                offset: Offset(-1, -1),
+                blurRadius: 4,
+              ),
             ],
           ),
         ),

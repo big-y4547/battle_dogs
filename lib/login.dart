@@ -48,6 +48,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    bool StatosEmail = false;
+    bool statosPassword = false;
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -139,6 +141,8 @@ class _LoginPageState extends State<LoginPage> {
                             if (!value.contains('@')) {
                               return 'Please enter a valid email';
                             }
+                            StatosEmail = true;
+                            return null;
                           },
                           onChanged: (String value) {
                             emailController.text = value;
@@ -175,6 +179,7 @@ class _LoginPageState extends State<LoginPage> {
                             if (value.length < 6) {
                               return 'Password must be at least 6 characters';
                             }
+                            statosPassword = true;
                             return null;
                           },
                           onChanged: (String value) {
@@ -201,14 +206,16 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         const SizedBox(height: 24),
                         GestureDetector(
-                          onTap: () {
+                          onTap: () async {
                             signIn();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => BattleDogsMainPage(),
-                              ),
-                            );
+                            if (statosPassword && StatosEmail) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => BattleDogsMainPage(),
+                                ),
+                              );
+                            }
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(vertical: 30),
