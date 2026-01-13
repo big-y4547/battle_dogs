@@ -66,7 +66,6 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             ElevatedButton(
               onPressed: () {
-                logout();
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(

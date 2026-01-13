@@ -1,7 +1,7 @@
 import 'package:battle_dogs/BattleDogsMainPage.dart';
 import 'package:battle_dogs/Register.dart';
-import 'package:battle_dogs/firebase/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -35,16 +35,6 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  void signIn() async {
-    try {
-      await authServies.value.signIn(
-        email: emailController.text,
-        password: passwordController.text,
-      );
-    } on FirebaseAuthException catch (e) {
-      print(e.message);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -207,12 +197,12 @@ class _LoginPageState extends State<LoginPage> {
                         const SizedBox(height: 24),
                         GestureDetector(
                           onTap: () async {
-                            signIn();
-                            if (statosPassword && StatosEmail) {
+                            if (StatosEmail && statosPassword) {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => BattleDogsMainPage(),
+                                  builder: (context) =>
+                                      BattleDogsMainPage(),
                                 ),
                               );
                             }

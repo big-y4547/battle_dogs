@@ -1,15 +1,11 @@
-import 'package:battle_dogs/firebase/auth_service.dart';
-import 'package:battle_dogs/firebase/database_service.dart';
+import 'dart:math';
+
 import 'package:battle_dogs/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 
-void main() async {
-  runApp(const MyApp());
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+void main(){
   runApp(const MyApp());
 }
 
@@ -37,17 +33,6 @@ class RegisterPage extends StatefulWidget {
   State<RegisterPage> createState() => _RegisterPageState();
 }
 
-void resister(dynamic controllerEmail, dynamic controllerPassword) async {
-  try {
-    await authServies.value.createUser(
-      email: controllerEmail.text,
-      password: controllerPassword.text,
-    );
-  } on FirebaseAuthException catch (e) {
-    print(e.message);
-  }
-}
-
 class _RegisterPageState extends State<RegisterPage> {
   TextEditingController controllerEmail = TextEditingController();
   TextEditingController controllerPassword = TextEditingController();
@@ -56,6 +41,8 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     bool statosPasword = false;
     bool statosEmail = false;
+    String password = '';
+    String email = '';
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -157,6 +144,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       return null;
                     },
                     onChanged: (String value) {
+                      email = value;
                       controllerEmail.text = value;
                     },
                   ),
@@ -195,21 +183,13 @@ class _RegisterPageState extends State<RegisterPage> {
                       return null;
                     },
                     onChanged: (String value) {
+                      password = value;
                       controllerPassword.text = value;
                     },
                   ),
                   const SizedBox(height: 36),
                   GestureDetector(
                     onTap: () {
-                      resister(controllerEmail, controllerPassword);
-                      DatabaseService().create(
-                        path: 'email',
-                        data: controllerEmail.text,
-                      );
-                      DatabaseService().create(
-                        path: 'password',
-                        data: controllerPassword.text,
-                      );
 
                       if (statosEmail && statosPasword) {
                         Navigator.push(
