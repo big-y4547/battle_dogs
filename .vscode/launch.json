@@ -5,7 +5,7 @@
       "name": "Flutter (Login)",
       "request": "launch",
       "type": "dart",
-      "program": "lib/login.dart"
+      "program": "lib/main.dart"
     }
   ]
 }

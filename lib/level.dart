@@ -2,7 +2,6 @@
 import 'lib.dart';
 import 'package:battle_dogs/BattleDogsMainPage.dart';
 import 'package:battle_dogs/Register.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 

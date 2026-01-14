@@ -1,29 +1,7 @@
 import 'package:battle_dogs/BattleDogsMainPage.dart';
 import 'package:battle_dogs/Register.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:battle_dogs/auth/auth_serviece.dart';
 import 'package:flutter/material.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Login',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: Colors.white,
-      ),
-      home: const LoginPage(title: 'Login'),
-    );
-  }
-}
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key, required String title});
@@ -33,20 +11,52 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
+  final authServiece = AuthServiece();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  
+  // 1. Create a GlobalKey to manage the Form state
+  final _formKey = GlobalKey<FormState>();
+  
+  // 2. State variable to show a loading spinner
+  bool _isLoading = false;
+
+  Future<void> login() async {
+    // Start loading
+    setState(() => _isLoading = true);
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    try {
+      await authServiece.signIn(email, password);
+      
+      // 3. Only navigate if the widget is still on screen
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => BattleDogsMainPage()),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Login failed: $e')),
+        );
+      }
+    } finally {
+      // Stop loading
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    bool StatosEmail = false;
-    bool statosPassword = false;
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           image: DecorationImage(
-            image: NetworkImage(
-              'https://images.unsplash.com/photo-1557683316-973673baf926?w=1200',
-            ),
+            image: NetworkImage('https://images.unsplash.com/photo-1557683316-973673baf926?w=1200'),
             fit: BoxFit.cover,
           ),
         ),
@@ -70,182 +80,96 @@ class _LoginPageState extends State<LoginPage> {
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.95),
                     borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
                   ),
                   child: Form(
+                    key: _formKey, // 4. ATTACH THE KEY HERE
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Icon(
-                          Icons.lock_person_rounded,
-                          size: 80,
-                          color: Colors.blue,
-                        ),
+                        const Icon(Icons.lock_person_rounded, size: 80, color: Colors.blue),
                         const SizedBox(height: 24),
                         const Text(
                           'Welcome Back',
-                          style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Sign in to continue',
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                          style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 32),
+                        
+                        // Email Field
                         TextFormField(
-                          keyboardType: TextInputType.text,
-                          decoration: InputDecoration(
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: const InputDecoration(
                             labelText: 'Email',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.grey),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Colors.blue,
-                                width: 2,
-                              ),
-                            ),
+                            prefixIcon: Icon(Icons.email_outlined),
+                            border: OutlineInputBorder(),
                           ),
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your Email';
-                            }
-                            if (!value.contains('@')) {
+                            if (value == null || !value.contains('@')) {
                               return 'Please enter a valid email';
                             }
-                            StatosEmail = true;
                             return null;
-                          },
-                          onChanged: (String value) {
-                            emailController.text = value;
                           },
                         ),
                         const SizedBox(height: 16),
+                        
+                        // Password Field
                         TextFormField(
-                          decoration: InputDecoration(
+                          controller: _passwordController,
+                          obscureText: true,
+                          decoration: const InputDecoration(
                             labelText: 'Password',
-                            prefixIcon: const Icon(Icons.lock_outline),
-                            suffixIcon: IconButton(
-                              icon: Icon(Icons.visibility_off_outlined),
-                              onPressed: () {},
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.grey),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Colors.blue,
-                                width: 2,
-                              ),
-                            ),
+                            prefixIcon: Icon(Icons.lock_outline),
+                            border: OutlineInputBorder(),
                           ),
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your password';
-                            }
-                            if (value.length < 6) {
+                            if (value == null || value.length < 6) {
                               return 'Password must be at least 6 characters';
                             }
-                            statosPassword = true;
                             return null;
                           },
-                          onChanged: (String value) {
-                            passwordController.text = value;
-                          },
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                // Navigate to forgot password
-                              },
-                              child: const Text(
-                                'Forgot Password?',
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
                         ),
                         const SizedBox(height: 24),
+                        
+                        // Sign In Button
                         GestureDetector(
-                          onTap: () async {
-                            if (StatosEmail && statosPassword) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      BattleDogsMainPage(),
-                                ),
-                              );
+                          onTap: () {
+                            if (_formKey.currentState!.validate() && !_isLoading) {
+                              login();
                             }
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 30),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
                             decoration: BoxDecoration(
-                              shape: BoxShape.rectangle,
                               color: Colors.blue,
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Text(
-                              'Sign In',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            child: Center(
+                              child: _isLoading 
+                                ? const CircularProgressIndicator(color: Colors.white)
+                                : const Text(
+                                    'Sign In', 
+                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                  ),
                             ),
                           ),
                         ),
                         const SizedBox(height: 24),
+                        
+                        // Switch to Register
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text(
-                              "Don't have an account? ",
-                              style: TextStyle(color: Colors.grey),
-                            ),
+                            const Text("Don't have an account? "),
                             GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        RegisterPage(title: 'Register'),
-                                  ),
-                                );
-                              },
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const RegisterPage(title: 'Register')),
+                              ),
                               child: const Text(
                                 'Sign Up',
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
                               ),
                             ),
                           ],

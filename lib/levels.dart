@@ -1,3 +1,4 @@
+import 'package:battle_dogs/level.dart';
 import 'package:flutter/material.dart';
 import 'package:battle_dogs/BattleDogsMainPage.dart';
 void main() {
@@ -172,13 +173,12 @@ class _LevelsPageState extends State<LevelsPage> {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       child: GestureDetector(
-        onTap: isLocked ? null : () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Starting ${level['name']}...'),
-              backgroundColor: level['color'],
-            ),
-          );
+        onTap:  () {
+          Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => LevelPage(title: 'level',)),
+          (route) => false,
+        );
         },
         child: Opacity(
           opacity: isLocked ? 0.5 : 1.0,

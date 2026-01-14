@@ -1,3 +1,5 @@
+import 'package:battle_dogs/auth/auth_serviece.dart';
+import 'package:battle_dogs/login.dart';
 import 'package:flutter/material.dart';
 import 'package:battle_dogs/BattleDogsMainPage.dart';
 
@@ -27,6 +29,10 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  final authServiece = AuthServiece();
+  void logout() async {
+    authServiece.signOut();
+  }
   double _musicVolume = 70.0;
   double _sfxVolume = 85.0;
 
@@ -55,7 +61,15 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () async {
+                logout();
+                Navigator.pop(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => LoginPage(title: 'Login'),
+                  ),
+                );
+              },
               child: const Text(
                 'CANCEL',
                 style: TextStyle(

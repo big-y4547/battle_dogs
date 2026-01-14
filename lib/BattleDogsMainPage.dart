@@ -1,7 +1,8 @@
 
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_database/firebase_database.dart';
+
+import 'dart:math';
+
+import 'package:battle_dogs/auth/auth_serviece.dart';
 import 'package:flutter/material.dart';
 import 'package:battle_dogs/login.dart';
 import 'package:battle_dogs/Gacha.dart';
@@ -40,6 +41,11 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage>
   late AnimationController _cloudController;
   final int _coins = 15750;
   final int _level = 23;
+  final authServiece = AuthServiece();
+  final String? userEmail = AuthServiece().getCurrentUser();
+  void logout() async {
+    authServiece.signOut();
+  }
   void _showDialog() {
     showDialog(
       context: context,
@@ -76,6 +82,7 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage>
             ),
             ElevatedButton(
               onPressed: () async {
+                logout();
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -204,6 +211,11 @@ class _BattleDogsMainPageState extends State<BattleDogsMainPage>
           _buildResourceDisplay(
             Icons.monetization_on_rounded,
             '$_coins',
+            const Color(0xFFFFD700),
+          ),
+            _buildResourceDisplay(
+            Icons.email_rounded,
+            '$userEmail',
             const Color(0xFFFFD700),
           ),
         ],
