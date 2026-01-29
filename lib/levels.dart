@@ -1,4 +1,5 @@
 import 'package:battle_dogs/level.dart';
+import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:battle_dogs/BattleDogsMainPage.dart';
 void main() {
@@ -176,7 +177,7 @@ class _LevelsPageState extends State<LevelsPage> {
         onTap:  () {
           Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => LevelPage(title: 'level',)),
+          MaterialPageRoute(builder: (context) => GameWidget(game: Level())),
           (route) => false,
         );
         },
