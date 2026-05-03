@@ -1,25 +1,8 @@
 import 'package:battle_dogs/auth/auth_serviece.dart';
 import 'package:battle_dogs/login.dart';
+import 'package:battle_dogs/MusicManager.dart';
 import 'package:flutter/material.dart';
 import 'package:battle_dogs/BattleDogsMainPage.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Battle Dogs Settings',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.orange, fontFamily: 'Arial'),
-      home: const SettingsPage(),
-    );
-  }
-}
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -30,71 +13,61 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   final authServiece = AuthServiece();
-  void logout() async {
-    authServiece.signOut();
-  }
-  double _musicVolume = 70.0;
+
+  double _musicVolume = 60.0;
   double _sfxVolume = 85.0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Sync slider to current music volume (0–100 scale)
+    _musicVolume = (MusicManager.instance.isPlaying ? 60 : 0).toDouble();
+  }
 
   void _showLogoutDialog() {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Row(
-            children: const [
-              Icon(
-                Icons.warning_amber_rounded,
-                color: Color(0xFFE74C3C),
-                size: 28,
-              ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded,
+                  color: Color(0xFFE74C3C), size: 28),
               SizedBox(width: 12),
               Text('Logout'),
             ],
           ),
-          content: const Text(
-            'Are you sure you want to logout?',
-            style: TextStyle(fontSize: 16),
-          ),
+          content: const Text('Are you sure you want to logout?',
+              style: TextStyle(fontSize: 16)),
           actions: [
             TextButton(
-              onPressed: () async {
-                logout();
-                Navigator.pop(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => LoginPage(title: 'Login'),
-                  ),
-                );
-              },
-              child: const Text(
-                'CANCEL',
-                style: TextStyle(
-                  color: Color(0xFF95A5A6),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('CANCEL',
+                  style: TextStyle(
+                      color: Color(0xFF95A5A6),
+                      fontWeight: FontWeight.bold)),
             ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Logged out successfully!'),
-                    backgroundColor: Color(0xFF27AE60),
-                  ),
-                );
+              onPressed: () async {
+                await authServiece.signOut();
+                if (mounted) {
+                  MusicManager.instance.stop();
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const LoginPage(title: 'Login')),
+                    (_) => false,
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE74C3C),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text('LOGOUT'),
+                  backgroundColor: const Color(0xFFE74C3C),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12))),
+              child: const Text('LOGOUT',
+                  style: TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -110,7 +83,11 @@ class _SettingsPageState extends State<SettingsPage> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF6DD5FA), Color(0xFF2980B9), Color(0xFF1E3C72)],
+            colors: [
+              Color(0xFF6DD5FA),
+              Color(0xFF2980B9),
+              Color(0xFF1E3C72)
+            ],
             stops: [0.0, 0.6, 1.0],
           ),
         ),
@@ -143,44 +120,39 @@ class _SettingsPageState extends State<SettingsPage> {
       padding: const EdgeInsets.all(16),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xF08B4513), Color(0xF0654321)],
-        ),
+            colors: [Color(0xF08B4513), Color(0xF0654321)]),
         boxShadow: [
           BoxShadow(
-            color: Color(0x80000000),
-            blurRadius: 12,
-            offset: Offset(0, 4),
-          ),
+              color: Color(0x80000000),
+              blurRadius: 12,
+              offset: Offset(0, 4))
         ],
       ),
       child: Row(
         children: [
           IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => BattleDogsMainPage()),
-              );
-            },
+            onPressed: () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const BattleDogsMainPage()),
+            ),
           ),
           const Expanded(
             child: Text(
               '⚙️ SETTINGS',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                letterSpacing: 2,
-                shadows: [
-                  Shadow(
-                    color: Colors.black,
-                    offset: Offset(2, 2),
-                    blurRadius: 4,
-                  ),
-                ],
-              ),
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 2,
+                  shadows: [
+                    Shadow(
+                        color: Colors.black,
+                        offset: Offset(2, 2),
+                        blurRadius: 4)
+                  ]),
             ),
           ),
           const SizedBox(width: 48),
@@ -202,10 +174,9 @@ class _SettingsPageState extends State<SettingsPage> {
         border: Border.all(color: const Color(0xFFFFD700), width: 4),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x66000000),
-            blurRadius: 15,
-            offset: Offset(0, 6),
-          ),
+              color: Color(0x66000000),
+              blurRadius: 15,
+              offset: Offset(0, 6))
         ],
       ),
       child: Column(
@@ -216,7 +187,16 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildVolumeSlider(
             '🎵 Music Volume',
             _musicVolume,
-            (value) => setState(() => _musicVolume = value),
+            (value) {
+              setState(() => _musicVolume = value);
+              MusicManager.instance.setVolume(value / 100.0);
+              // Auto-start music if above 0, stop if 0
+              if (value > 0) {
+                MusicManager.instance.play();
+              } else {
+                MusicManager.instance.pause();
+              }
+            },
           ),
           const SizedBox(height: 20),
           _buildVolumeSlider(
@@ -224,55 +204,72 @@ class _SettingsPageState extends State<SettingsPage> {
             _sfxVolume,
             (value) => setState(() => _sfxVolume = value),
           ),
+          const SizedBox(height: 20),
+          // Music on/off toggle
+          Row(
+            children: [
+              const Text('🎶 Background Music',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2C3E50))),
+              const Spacer(),
+              Switch(
+                value: MusicManager.instance.isPlaying,
+                activeColor: const Color(0xFF27AE60),
+                onChanged: (on) {
+                  setState(() {
+                    if (on) {
+                      MusicManager.instance.play();
+                      if (_musicVolume == 0) {
+                        _musicVolume = 60;
+                        MusicManager.instance.setVolume(0.6);
+                      }
+                    } else {
+                      MusicManager.instance.pause();
+                    }
+                  });
+                },
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
   Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-        color: Color(0xFF2C3E50),
-      ),
-    );
+    return Text(title,
+        style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2C3E50)));
   }
 
   Widget _buildVolumeSlider(
-    String label,
-    double value,
-    ValueChanged<double> onChanged,
-  ) {
+      String label, double value, ValueChanged<double> onChanged) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF2C3E50),
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF3498DB),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                '${value.round()}%',
+            Text(label,
                 style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2C3E50))),
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                  color: const Color(0xFF3498DB),
+                  borderRadius: BorderRadius.circular(12)),
+              child: Text('${value.round()}%',
+                  style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white)),
             ),
           ],
         ),
@@ -314,34 +311,27 @@ class _SettingsPageState extends State<SettingsPage> {
           border: Border.all(color: const Color(0xFFFFD700), width: 4),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x66000000),
-              blurRadius: 10,
-              offset: Offset(0, 6),
-            ),
+                color: Color(0x66000000),
+                blurRadius: 10,
+                offset: Offset(0, 6)),
             BoxShadow(
-              color: Color(0x80E74C3C),
-              blurRadius: 20,
-              spreadRadius: 2,
-            ),
+                color: Color(0x80E74C3C), blurRadius: 20, spreadRadius: 2),
           ],
         ),
         child: const Text(
           '🚪 LOGOUT',
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w900,
-            color: Colors.white,
-            letterSpacing: 2,
-            shadows: [
-              Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
-              Shadow(
-                color: Colors.black54,
-                offset: Offset(-1, -1),
-                blurRadius: 4,
-              ),
-            ],
-          ),
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              letterSpacing: 2,
+              shadows: [
+                Shadow(
+                    color: Colors.black,
+                    offset: Offset(2, 2),
+                    blurRadius: 4)
+              ]),
         ),
       ),
     );

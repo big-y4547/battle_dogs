@@ -1,27 +1,9 @@
 import 'package:battle_dogs/level.dart';
+import 'package:battle_dogs/Dogs.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:battle_dogs/BattleDogsMainPage.dart';
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Battle Dogs Levels',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.orange,
-        fontFamily: 'Arial',
-      ),
-      home: const LevelsPage(),
-    );
-  }
-}
 
 class LevelsPage extends StatefulWidget {
   const LevelsPage({super.key});
@@ -31,53 +13,181 @@ class LevelsPage extends StatefulWidget {
 }
 
 class _LevelsPageState extends State<LevelsPage> {
-  final List<Map<String, dynamic>> _levels = [
+  final _supabase = Supabase.instance.client;
+  List<int> _completedLevels = [];
+  List<String> _ownedDogs = [];
+  bool _loading = true;
+
+  // Level definitions
+  static const List<Map<String, dynamic>> _levels = [
     {
       'level': 1,
       'name': 'Puppy Park',
       'difficulty': 'Easy',
-      'stars': 3,
-      'completed': true,
       'icon': '🏞️',
-      'color': Color(0xFF27AE60),
+      'bgColor': Color(0xFF27AE60),
+      'unlocksDog': null,
+      'enemyStrength': 0.6,
+      'description': 'A peaceful park overrun by stray cats!',
     },
     {
       'level': 2,
       'name': 'Dog Beach',
       'difficulty': 'Easy',
-      'stars': 2,
-      'completed': true,
       'icon': '🏖️',
-      'color': Color(0xFF3498DB),
+      'bgColor': Color(0xFF3498DB),
+      'unlocksDog': 'dalmation',
+      'enemyStrength': 0.8,
+      'description': 'Sandy shores, angry seagull-cats. Unlock: Dalmatian Sniper!',
     },
     {
       'level': 3,
       'name': 'Urban Streets',
       'difficulty': 'Medium',
-      'stars': 1,
-      'completed': true,
       'icon': '🏙️',
-      'color': Color(0xFFF39C12),
+      'bgColor': Color(0xFFF39C12),
+      'unlocksDog': 'shepherd',
+      'enemyStrength': 1.0,
+      'description': 'City alley brawl. Unlock: German Shepherd Knight!',
     },
     {
       'level': 4,
       'name': 'Dark Forest',
       'difficulty': 'Hard',
-      'stars': 0,
-      'completed': false,
       'icon': '🌲',
-      'color': Color(0xFF8E44AD),
+      'bgColor': Color(0xFF8E44AD),
+      'unlocksDog': null,
+      'enemyStrength': 1.4,
+      'description': 'Danger lurks between ancient trees.',
     },
     {
       'level': 5,
       'name': 'Boss Arena',
       'difficulty': 'Boss',
-      'stars': 0,
-      'completed': false,
       'icon': '🏟️',
-      'color': Color(0xFFE74C3C),
+      'bgColor': Color(0xFFE74C3C),
+      'unlocksDog': null,
+      'enemyStrength': 2.0,
+      'description': 'Face the ultimate Cat Boss!',
     },
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return;
+    final res = await _supabase
+        .from('players')
+        .select('completed_levels, owned_dogs')
+        .eq('user_id', user.id)
+        .maybeSingle();
+    if (res != null) {
+      setState(() {
+        _completedLevels = List<int>.from(res['completed_levels'] ?? []);
+        _ownedDogs = List<String>.from(res['owned_dogs'] ?? []);
+        _loading = false;
+      });
+    } else {
+      setState(() => _loading = false);
+    }
+  }
+
+  bool _isUnlocked(int levelNum) {
+    if (levelNum == 1) return true;
+    return _completedLevels.contains(levelNum - 1);
+  }
+
+  Future<void> _onLevelComplete(int levelNum, bool won) async {
+    if (!won) return;
+    final user = _supabase.auth.currentUser;
+    if (user == null) return;
+
+    final updated = {..._completedLevels, levelNum}.toList();
+    final levelDef = _levels.firstWhere((l) => l['level'] == levelNum);
+    final unlockDogId = levelDef['unlocksDog'] as String?;
+
+    final newOwned = List<String>.from(_ownedDogs);
+    if (unlockDogId != null && !newOwned.contains(unlockDogId)) {
+      newOwned.add(unlockDogId);
+      if (mounted) {
+        final dog = getDogById(unlockDogId);
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Text('🔓 Dog Unlocked!'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(dog?['icon'] ?? '', style: const TextStyle(fontSize: 60)),
+                const SizedBox(height: 8),
+                Text(dog?['name'] ?? '', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                Text(dog?['description'] ?? ''),
+              ],
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text('AWESOME!')),
+            ],
+          ),
+        );
+      }
+    }
+
+    await _supabase.from('players').update({
+      'completed_levels': updated,
+      'owned_dogs': newOwned,
+    }).eq('user_id', user.id);
+
+    setState(() {
+      _completedLevels = updated;
+      _ownedDogs = newOwned;
+    });
+  }
+
+  void _startLevel(int levelNum) async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return;
+
+    // Get squad from DB
+    final res = await _supabase
+        .from('players')
+        .select('squad')
+        .eq('user_id', user.id)
+        .maybeSingle();
+    final squadIds = List<String>.from(res?['squad'] ?? []);
+
+    if (squadIds.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Add at least 1 dog to your squad in My Pack!'),
+            backgroundColor: Color(0xFFE74C3C)),
+      );
+      return;
+    }
+
+    final levelDef = _levels.firstWhere((l) => l['level'] == levelNum);
+
+    final won = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => GameWidget(
+          game: Level(
+            levelNumber: levelNum,
+            squadIds: squadIds,
+            enemyStrength: (levelDef['enemyStrength'] as double),
+            onGameEnd: (won) {},
+          ),
+        ),
+      ),
+    );
+
+    if (won == true) _onLevelComplete(levelNum, true);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,11 +197,7 @@ class _LevelsPageState extends State<LevelsPage> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF6DD5FA),
-              Color(0xFF2980B9),
-              Color(0xFF1E3C72),
-            ],
+            colors: [Color(0xFF6DD5FA), Color(0xFF2980B9), Color(0xFF1E3C72)],
             stops: [0.0, 0.6, 1.0],
           ),
         ),
@@ -100,16 +206,13 @@ class _LevelsPageState extends State<LevelsPage> {
             children: [
               _buildHeader(),
               Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 10),
-                      _buildLevelsList(),
-                      const SizedBox(height: 20),
-                    ],
-                  ),
-                ),
+                child: _loading
+                    ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(20),
+                        itemCount: _levels.length,
+                        itemBuilder: (_, i) => _buildLevelCard(_levels[i]),
+                      ),
               ),
             ],
           ),
@@ -122,39 +225,20 @@ class _LevelsPageState extends State<LevelsPage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xF08B4513), Color(0xF0654321)],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x80000000),
-            blurRadius: 12,
-            offset: Offset(0, 4),
-          ),
-        ],
+        gradient: LinearGradient(colors: [Color(0xF08B4513), Color(0xF0654321)]),
+        boxShadow: [BoxShadow(color: Color(0x80000000), blurRadius: 12, offset: Offset(0, 4))],
       ),
       child: Row(
         children: [
           IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context)=>BattleDogsMainPage()));
-            },
+            onPressed: () => Navigator.pushReplacement(
+                context, MaterialPageRoute(builder: (_) => const BattleDogsMainPage())),
           ),
           const Expanded(
-            child: Text(
-              '⚔️ SELECT LEVEL',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                letterSpacing: 2,
-                shadows: [
-                  Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
-                ],
-              ),
-            ),
+            child: Text('⚔️ SELECT LEVEL',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 2)),
           ),
           const SizedBox(width: 48),
         ],
@@ -162,176 +246,136 @@ class _LevelsPageState extends State<LevelsPage> {
     );
   }
 
-  Widget _buildLevelsList() {
-    return Column(
-      children: _levels.map((level) => _buildLevelButton(level)).toList(),
-    );
-  }
+  Widget _buildLevelCard(Map<String, dynamic> level) {
+    final int num = level['level'] as int;
+    final bool unlocked = _isUnlocked(num);
+    final bool completed = _completedLevels.contains(num);
+    final Color bgColor = level['bgColor'] as Color;
+    final String? unlockDogId = level['unlocksDog'] as String?;
+    final unlockDog = unlockDogId != null ? getDogById(unlockDogId) : null;
 
-  Widget _buildLevelButton(Map<String, dynamic> level) {
-    final bool isLocked = !level['completed'] && level['level'] > 1 && !_levels[level['level'] - 2]['completed'];
-    
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      child: GestureDetector(
-        onTap:  () {
-          Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => GameWidget(game: Level())),
-          (route) => false,
-        );
-        },
-        child: Opacity(
-          opacity: isLocked ? 0.5 : 1.0,
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
+    return GestureDetector(
+      onTap: unlocked ? () => _startLevel(num) : null,
+      child: Opacity(
+        opacity: unlocked ? 1.0 : 0.5,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  level['color'],
-                  Color(level['color'].value & 0x00FFFFFF | 0xCC000000),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(25),
-              border: Border.all(
-                color: const Color(0xFFFFD700),
-                width: 4,
-              ),
-              boxShadow: [
-                const BoxShadow(
-                  color: Color(0x66000000),
-                  blurRadius: 15,
-                  offset: Offset(0, 6),
-                ),
-                BoxShadow(
-                  color: Color(level['color'].value & 0x00FFFFFF | 0x66000000),
-                  blurRadius: 20,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: const Color(0x33FFFFFF),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 3),
-                  ),
-                  child: Center(
-                    child: Text(
-                      level['icon'],
-                      style: const TextStyle(fontSize: 40),
+                colors: [bgColor, bgColor.withOpacity(0.6)]),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+                color: completed ? const Color(0xFFFFD700) : Colors.white.withOpacity(0.5),
+                width: completed ? 4 : 2),
+            boxShadow: [
+              BoxShadow(color: bgColor.withOpacity(0.4), blurRadius: 16, offset: const Offset(0, 6)),
+            ],
+          ),
+          child: Column(
+            children: [
+              // Main row
+              Padding(
+                padding: const EdgeInsets.all(18),
+                child: Row(
+                  children: [
+                    // Icon bubble
+                    Container(
+                      width: 76,
+                      height: 76,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.25),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 3),
+                      ),
+                      child: Center(child: Text(level['icon'], style: const TextStyle(fontSize: 38))),
                     ),
-                  ),
+                    const SizedBox(width: 16),
+                    // Text info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              _pill('LEVEL $num', Colors.black26),
+                              const SizedBox(width: 8),
+                              _pill(level['difficulty'],
+                                  _difficultyColor(level['difficulty'] as String)),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(level['name'],
+                              style: const TextStyle(
+                                  fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white,
+                                  shadows: [Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4)])),
+                          const SizedBox(height: 4),
+                          Text(level['description'],
+                              style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.9))),
+                          const SizedBox(height: 6),
+                          // Stars
+                          Row(
+                            children: List.generate(
+                                3,
+                                (i) => Icon(
+                                    i < (completed ? 3 : 0) ? Icons.star : Icons.star_border,
+                                    color: const Color(0xFFFFD700),
+                                    size: 22)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Play / lock icon
+                    Icon(
+                      unlocked ? Icons.play_arrow_rounded : Icons.lock_rounded,
+                      color: Colors.white,
+                      size: 44,
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+              // Unlock dog reward banner
+              if (unlockDog != null)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 18),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.25),
+                    borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(24), bottomRight: Radius.circular(24)),
+                  ),
+                  child: Row(
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0x4D000000),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.white, width: 2),
-                            ),
-                            child: Text(
-                              'LEVEL ${level['level']}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        level['name'],
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: _getDifficultyColor(level['difficulty']),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: Colors.white, width: 2),
-                            ),
-                            child: Text(
-                              level['difficulty'],
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          if (level['completed'])
-                            Row(
-                              children: List.generate(3, (index) {
-                                return Icon(
-                                  index < level['stars'] ? Icons.star : Icons.star_border,
-                                  color: const Color(0xFFFFD700),
-                                  size: 24,
-                                );
-                              }),
-                            ),
-                          if (!level['completed'] && !isLocked)
-                            const Icon(
-                              Icons.lock_open,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                          if (isLocked)
-                            const Icon(
-                              Icons.lock,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                        ],
-                      ),
+                      const Icon(Icons.lock_open, color: Color(0xFFFFD700), size: 18),
+                      const SizedBox(width: 6),
+                      Text('Beat this level → unlock ',
+                          style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 12)),
+                      Text(unlockDog['icon'] ?? '', style: const TextStyle(fontSize: 16)),
+                      const SizedBox(width: 4),
+                      Text(unlockDog['name'] ?? '',
+                          style: const TextStyle(
+                              color: Color(0xFFFFD700), fontSize: 12, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
-                if (!isLocked)
-                  const Icon(
-                    Icons.play_arrow_rounded,
-                    color: Colors.white,
-                    size: 48,
-                    shadows: [
-                      Shadow(color: Colors.black, offset: Offset(2, 2), blurRadius: 4),
-                    ],
-                  ),
-              ],
-            ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Color _getDifficultyColor(String difficulty) {
-    switch (difficulty) {
+  Widget _pill(String text, Color color) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+        decoration:
+            BoxDecoration(color: color, borderRadius: BorderRadius.circular(10)),
+        child: Text(text,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
+      );
+
+  Color _difficultyColor(String d) {
+    switch (d) {
       case 'Easy':
         return const Color(0xFF27AE60);
       case 'Medium':
@@ -341,7 +385,7 @@ class _LevelsPageState extends State<LevelsPage> {
       case 'Boss':
         return const Color(0xFFE74C3C);
       default:
-        return const Color(0xFF95A5A6);
+        return Colors.grey;
     }
   }
 }
