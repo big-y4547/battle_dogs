@@ -67,61 +67,74 @@ class _GachaPageState extends State<GachaPage> with TickerProviderStateMixin {
     }
   }
 
-  Future<void> _persistWins(List<Map<String, dynamic>> won) async {
-    final user = _supabase.auth.currentUser;
-    if (user == null) return;
+ Future<void> _persistWins(List<Map<String, dynamic>> won) async {
+  final user = _supabase.auth.currentUser;
+  if (user == null) return;
 
-    final newIds = won.map((d) => d['id'] as String).toList();
-    final merged = {..._ownedIds, ...newIds}.toList();
+  final newIds = won.map((d) => d['id'] as String).toList();
+  final merged = {..._ownedIds, ...newIds}.toList();
 
-    await _supabase.from('players').update({
-      'coins': _coins,
-      'owned_dogs': merged,
-    }).eq('user_id', user.id);
+  // עדכון כלבים ומטבעות
+  await _supabase.from('players').update({
+    'coins': _coins,
+    'owned_dogs': merged,
+  }).eq('user_id', user.id);
 
-    setState(() => _ownedIds = merged);
+  // כתיבה לטבלת gacha_pulls — רשומה לכל כלב שנמשך
+  final pullRecords = won.map((d) => {
+    'user_id': user.id,
+    'dog_id': d['id'] as String,
+    'dog_name': d['name'] as String,
+    'rarity': d['rarity'] as String,
+    'coins_spent': won.length > 1 ? 150 : 150, // 150 לכלב בין אם x1 או x10
+  }).toList();
+
+  await _supabase.from('gacha_pulls').insert(pullRecords);
+
+  setState(() => _ownedIds = merged);
+ }
+
+ void _rollGacha(bool isMulti) async {
+  final cost = isMulti ? 1500 : 150;
+  final costPerDog = 150; // תמיד 150 לכלב
+  if (_coins < cost) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Not enough coins!'), backgroundColor: Color(0xFFE74C3C)),
+    );
+    return;
   }
 
-  void _rollGacha(bool isMulti) async {
-    final cost = isMulti ? 1500 : 150;
-    if (_coins < cost) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Not enough coins!'), backgroundColor: Color(0xFFE74C3C)),
-      );
-      return;
+  setState(() {
+    _isRolling = true;
+    _coins -= cost;
+  });
+
+  _capsuleController.forward(from: 0);
+  await Future.delayed(const Duration(milliseconds: 1500));
+
+  final random = Random();
+  final results = <Map<String, dynamic>>[];
+
+  for (int i = 0; i < (isMulti ? 10 : 1); i++) {
+    final roll = random.nextDouble();
+    List<Map<String, dynamic>> pool;
+    if (roll < 0.01) {
+      pool = _gachaPool.where((d) => d['rarity'] == 'Legendary').toList();
+    } else if (roll < 0.10) {
+      pool = _gachaPool.where((d) => d['rarity'] == 'Epic').toList();
+    } else if (roll < 0.35) {
+      pool = _gachaPool.where((d) => d['rarity'] == 'Rare').toList();
+    } else {
+      pool = _gachaPool.where((d) => d['rarity'] == 'Common').toList();
     }
-
-    setState(() {
-      _isRolling = true;
-      _coins -= cost;
-    });
-
-    _capsuleController.forward(from: 0);
-    await Future.delayed(const Duration(milliseconds: 1500));
-
-    final random = Random();
-    final results = <Map<String, dynamic>>[];
-
-    for (int i = 0; i < (isMulti ? 10 : 1); i++) {
-      final roll = random.nextDouble();
-      List<Map<String, dynamic>> pool;
-      if (roll < 0.01) {
-        pool = _gachaPool.where((d) => d['rarity'] == 'Legendary').toList();
-      } else if (roll < 0.10) {
-        pool = _gachaPool.where((d) => d['rarity'] == 'Epic').toList();
-      } else if (roll < 0.35) {
-        pool = _gachaPool.where((d) => d['rarity'] == 'Rare').toList();
-      } else {
-        pool = _gachaPool.where((d) => d['rarity'] == 'Common').toList();
-      }
-      if (pool.isEmpty) pool = _gachaPool;
-      results.add(pool[random.nextInt(pool.length)]);
-    }
-
-    setState(() => _isRolling = false);
-    await _persistWins(results);
-    _showResultDialog(results);
+    if (pool.isEmpty) pool = _gachaPool;
+    results.add(pool[random.nextInt(pool.length)]);
   }
+
+  setState(() => _isRolling = false);
+  await _persistWins(results);
+  _showResultDialog(results);
+ }
 
   void _showResultDialog(List<Map<String, dynamic>> results) {
     showDialog(

@@ -411,7 +411,7 @@ class Level extends FlameGame with TapCallbacks {
   }
 
   void _buildDeploymentBar() {
-    final barY = size.y - kUIBarHeight;
+    final barY = size.y - kUIBarHeight+10;
 
     // Battle Cats style: dark panel
     add(RectangleComponent(
@@ -2007,10 +2007,7 @@ class _PauseOverlay extends StatelessWidget {
                   onTap: () {
                     game.gameEnded = true;
                     game.onGameEnd(false);
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (_) => const LevelsPage()),
-                      (route) => false,
-                    );
+                    Navigator.pop(context);
                   },
                 ),
               ],
@@ -2079,10 +2076,7 @@ class _GameOverOverlayState extends State<_GameOverOverlay> {
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
         widget.game.onGameEnd(widget.game._gameOverWon);
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const LevelsPage()),
-          (route) => false,
-        );
+        Navigator.pop(context);
       }
     });
   }
@@ -2122,10 +2116,7 @@ class _GameOverOverlayState extends State<_GameOverOverlay> {
               GestureDetector(
                 onTap: () {
                   widget.game.onGameEnd(won);
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (_) => const LevelsPage()),
-                    (route) => false,
-                  );
+                  Navigator.pop(context);
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
