@@ -67,32 +67,20 @@ class _GachaPageState extends State<GachaPage> with TickerProviderStateMixin {
     }
   }
 
- Future<void> _persistWins(List<Map<String, dynamic>> won) async {
-  final user = _supabase.auth.currentUser;
-  if (user == null) return;
+  Future<void> _persistWins(List<Map<String, dynamic>> won) async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) return;
 
-  final newIds = won.map((d) => d['id'] as String).toList();
-  final merged = {..._ownedIds, ...newIds}.toList();
+    final newIds = won.map((d) => d['id'] as String).toList();
+    final merged = {..._ownedIds, ...newIds}.toList();
 
-  // עדכון כלבים ומטבעות
-  await _supabase.from('players').update({
-    'coins': _coins,
-    'owned_dogs': merged,
-  }).eq('user_id', user.id);
+    await _supabase.from('players').update({
+      'coins': _coins,
+      'owned_dogs': merged,
+    }).eq('user_id', user.id);
 
-  // כתיבה לטבלת gacha_pulls — רשומה לכל כלב שנמשך
-  final pullRecords = won.map((d) => {
-    'user_id': user.id,
-    'dog_id': d['id'] as String,
-    'dog_name': d['name'] as String,
-    'rarity': d['rarity'] as String,
-    'coins_spent': won.length > 1 ? 150 : 150, // 150 לכלב בין אם x1 או x10
-  }).toList();
-
-  await _supabase.from('gacha_pulls').insert(pullRecords);
-
-  setState(() => _ownedIds = merged);
- }
+    setState(() => _ownedIds = merged);
+  }
 
  void _rollGacha(bool isMulti) async {
   final cost = isMulti ? 1500 : 150;

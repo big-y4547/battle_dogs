@@ -17,11 +17,13 @@ class _SettingsPageState extends State<SettingsPage> {
   double _musicVolume = 60.0;
   double _sfxVolume = 85.0;
 
+  bool _isMusicOn = false;
+
   @override
   void initState() {
     super.initState();
-    // Sync slider to current music volume (0–100 scale)
-    _musicVolume = (MusicManager.instance.isPlaying ? 60 : 0).toDouble();
+    _isMusicOn = MusicManager.instance.isPlaying;
+    _musicVolume = _isMusicOn ? 60.0 : 0.0;
   }
 
   void _showLogoutDialog() {
@@ -188,9 +190,11 @@ class _SettingsPageState extends State<SettingsPage> {
             '🎵 Music Volume',
             _musicVolume,
             (value) {
-              setState(() => _musicVolume = value);
+              setState(() {
+                _musicVolume = value;
+                _isMusicOn = value > 0;
+              });
               MusicManager.instance.setVolume(value / 100.0);
-              // Auto-start music if above 0, stop if 0
               if (value > 0) {
                 MusicManager.instance.play();
               } else {
@@ -215,16 +219,17 @@ class _SettingsPageState extends State<SettingsPage> {
                       color: Color(0xFF2C3E50))),
               const Spacer(),
               Switch(
-                value: MusicManager.instance.isPlaying,
+                value: _isMusicOn,
                 activeColor: const Color(0xFF27AE60),
                 onChanged: (on) {
                   setState(() {
+                    _isMusicOn = on;
                     if (on) {
-                      MusicManager.instance.play();
                       if (_musicVolume == 0) {
                         _musicVolume = 60;
                         MusicManager.instance.setVolume(0.6);
                       }
+                      MusicManager.instance.play();
                     } else {
                       MusicManager.instance.pause();
                     }
